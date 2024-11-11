@@ -3,7 +3,7 @@ section { padding: 2rem; margin: 1rem auto; max-width: 800px; background: #fff; 
 body, footer { overscroll-behavior-x: none; font-family: Arial, sans-serif; margin: 20px; padding: 0; background-color: #f4f4f4; }
 .navbar { margin-bottom: 20px; }
 .formulario { display: flex; }
-.formulario { font-size: 16px; font-size: auto; font-weight: bold;}
+.formulario { font-size: 16px; font-size: auto;}
 footer { margin-left: 0px; margin-right: 0px; }
 footer p a { font-size: 12px; }
 a { text-decoration:none; color: white; transition: 0.2s; }
