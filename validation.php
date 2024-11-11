@@ -1,131 +1,78 @@
-<!DOCTYPE html>
-<html>
-<head>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
- 	<link rel="stylesheet" type="text/css" href="CSS/style.css">
- 	<link rel="icon" href="img/Logo.jpeg" type="image/x-icon">
- 	<script src="JS/funciones.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-	<script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
-  	<script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
-	<title>Contacto</title>
-</head>
-<body id="CambioColor">
-
-<nav class="navbar navbar-expand-sm bg-dark navbar-dark">
-  <div class="container-fluid">
-    <a class="navbar-brand nav-link disabled" href="">
-      <img src="img/Logo.jpeg" alt="Logo" style="width:40px;" class="rounded-pill">
-    </a>
-
-    <div class="container-fluid">
-    <ul class="navbar-nav">
-      <li class="nav-item">
-        <a class="nav-link" href="">Home</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="">Sobre mi</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="">Proyectos</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link active disabled" href="">Contacto</a>
-      </li>
-      <a class="nav-link" href="">Test</a>
-    </ul>
-  </div>
-  </div>
-</nav>
-
-<!-- (123) 456-7890 -->
-
 <?php
+// Definir la función input antes de su uso
+function input($data) {
+    $data = trim($data);
+    $data = stripslashes($data);
+    $data = htmlspecialchars($data);
+    return $data;
+}
 
-    $Nombre = $Email = $Numtelefono = $FechaNacimiento = $Genero = $FotoPerfil = $PaisResidencia = $DescPro = "";
+function validarEdad($fechaNacimiento) {
+    // Convertir la fecha de nacimiento en un objeto DateTime
+    $fechaNacimiento = new DateTime($fechaNacimiento);
+    // Obtener la fecha actual
+    $fechaActual = new DateTime();
+    
+    // Calcular la diferencia de años entre la fecha actual y la de nacimiento
+    $edad = $fechaActual->diff($fechaNacimiento)->y;
+    
+    // Validar si la persona es mayor o menor de 18 años
+    if ($edad >= 18) {
+        return "El usuario es mayor de edad";
+    } else {
+        return "El usuario es menor de edad";
+    }
+}
 
-    if ($_SERVER["REQUEST_METHOD"] == "POST") {
-        $Nombre = input($_POST["Name"]);
-        //echo "El nombre del usuario es: $Nombre";
+function validarTamañoFichero($file) {
+    $maxSize = 300 * 1024; // Tamaño máximo en bytes (300 KB)
+    return isset($file['size']) && $file['size'] <= $maxSize;
+}
 
-        $Email = input($_POST["email"]);
-        $Numtelefono = input($_POST["NumTelefono"]);
-        $FechaNacimiento = input($_POST["fechai"]);
-        $Genero = $_POST["Sexo"];
-        $FotoPerfil = input($_POST["file"]);
-        $PaisResidencia = input($_POST["Pais"]);
-        $DescPro = input($_POST["DescPro"]);
-    }    
+// Procesamiento de datos y generación de HTML de respuesta
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $Nombre = input($_POST["Name"]);
+    $Email = input($_POST["email"]);
+    $Numtelefono = input($_POST["NumTelefono"]);
+    $FechaNacimiento = input($_POST["FechaNacimiento"]);
+    $Genero = isset($_POST["Sexo"]) ? $_POST["Sexo"] : "";
+    $MensajeEdad = validarEdad($FechaNacimiento);
+    
+    // Verificar las habilidades seleccionadas y concatenarlas
+    $Habilidades_pro = isset($_POST["Habilidades"]) ? implode(", ", $_POST["Habilidades"]) : "No se seleccionaron habilidades";
+    
+    // Inicializar la variable $FotoPerfil
+    $FotoPerfil = "No se subió ninguna foto";
 
-   function input($data) {
-        $data = trim($data);
-        $data = stripslashes($data);
-        $data = htmlspecialchars($data);
-        return $data;
-   }
+    // Manejar la carga del archivo de perfil
+    if (isset($_FILES["file"]) && $_FILES["file"]["error"] == 0) {
+        // Validar el tamaño del archivo
+        if (validarTamañoFichero($_FILES["file"])) {
+            $FotoPerfil = $_FILES["file"]["name"]; // Solo el nombre del archivo si cumple con el tamaño
+        } else {
+            $FotoPerfil = "El archivo supera el tamaño máximo permitido de 300 KB.";
+        }
+    }
 
+    $PaisResidencia = input($_POST["Pais"]);
+    $DescPro = input($_POST["DescPro"]);
+
+    // Generar HTML de respuesta sobrescribiendo el contenido del div principal
+    echo "<div class='formulario form-control mt-3 d-flex justify-content-center'>
+            <table>
+                <tr><th>Resumen del formulario</th></tr>
+                <tr><th><br>Nombre Completo:</th><td><br>$Nombre</td></tr>
+                <tr><th>Correo electrónico:</th><td>$Email</td></tr>
+                <tr><th>Número de teléfono:</th><td>$Numtelefono</td></tr>
+                <tr><th>Fecha de nacimiento:</th><td>$FechaNacimiento - $MensajeEdad</td></tr>
+                <tr><th>Género:</th><td>$Genero</td></tr>
+                <tr><th colspan='2'><br>Habilidades Profesionales:</th></tr>
+                <tr><td colspan='2'>$Habilidades_pro</td></tr>
+                <tr><th><br>Foto de perfil:</th><td><br>$FotoPerfil</td></tr>
+                <tr><th>País de Residencia:</th><td>$PaisResidencia</td></tr>
+                <tr><th colspan='2'><br>Descripción Profesional:</th></tr>
+                <tr><td colspan='2'>$DescPro</td></tr>
+            </table>
+          </div>";
+}
 ?>
-
-<div class='formulario form-control mt-3 d-flex justify-content-center'>
-    <table>
-    <table>
-    <tr>
-    <th><p>Nombre Completo: </p></th>
-    <td><p><?php echo $Nombre ?></p></td>
-    </tr>
-    <tr>
-    <th><p>Correo electrónico: </p></th>
-    <td><p><?php echo $Email ?></p></td>
-    </tr>
-    <tr>
-    <th><p>Número de teléfono: </p></th>
-    <td><p><?php $Numtelefono ?></p></td>
-    </tr>
-    <tr>
-    <th><p>Fecha de nacimiento: </p></th>
-    <td><p><?php echo $FechaNacimiento ?></p></td>
-    </tr>
-    <tr>
-    <th><p>Selecciona tu género</p></th>
-    <td><p><?php echo $Genero ?></p></td>
-    </tr>
-    <tr>
-    <th colspan='2'><p><br>Habilidades Profesionales</p></th>
-    </tr>
-    <tr>
-    <td><p><br>Foto de perfil: </p></td>
-    <td><p><?php echo $FotoPerfil ?></p></td>
-    </tr>
-    <tr>
-    <th><p>País de Residencia </p></th>
-    <td><p><?php echo $PaisResidencia ?></p></td>
-    </tr>
-    <tr>
-    <th colspan='2'><p>Descripción Profesional </p></th>
-    </tr>
-    <tr>
-    <td colspan='2'><p><?php echo $DescPro ?></p></td>
-    </tr>
-    </table>
-    </table>
-</div>
-
-<footer class="bg-dark text-white text-center py-3">
-    <div class="container">
-        <p>&copy; 2024 Alejandro González García. Todos los derechos reservados.</p>
-        <p>
-	        <a href="#" class="text-white">Política de Privacidad</a>
-	        <a href="#" class="text-white">Términos de Servicio</a>
-        </p>
-        <p>
-          <a href="https://www.instagram.com/"><ion-icon name="logo-instagram"></ion-icon></a>
-          <a href="https://www.facebook.com/"><ion-icon name="logo-facebook"></ion-icon></a>
-          <a href="https://x.com/"><ion-icon name="logo-twitter"></ion-icon></a>
-        </p>
-    </div>
-</footer>
-
-</body>
-</html>
